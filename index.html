@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Bitácora Óptica AAXIS</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+    header { background-color: #003366; color: white; padding: 20px; text-align: center; font-size: 24px; }
+    .container { padding: 20px; }
+    .actions { display: flex; gap: 20px; margin-bottom: 20px; }
+    .action-box {
+      flex: 1; background-color: #007acc; color: white; text-align: center;
+      padding: 30px; border-radius: 8px; cursor: pointer; font-size: 18px;
+    }
+    .action-box:hover { background-color: #005fa3; }
+    .form-section, .search-section {
+      display: none; background-color: white; padding: 20px; border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    form label { display: block; margin: 10px 0 5px; }
+    form input, form textarea {
+      width: 100%; padding: 8px; margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 20px; margin-right: 10px;
+      background-color: #007acc; color: white;
+      border: none; border-radius: 5px; cursor: pointer;
+    }
+    .client-result {
+      border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;
+      border-radius: 5px; background-color: #fafafa;
+    }
+    .visit-entry {
+      background-color: #eef; padding: 10px; margin-top: 10px;
+      border-left: 3px solid #007acc;
+    }
+    .client-result {
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  padding: 1em;
+  margin-bottom: 1em;
+  background-color: #f9f9f9;
+}
+
+.client-result input {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
+
+.client-result button {
+  margin-right: 10px;
+  margin-top: 10px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 6px;
+  background-color: #007BFF;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.client-result button:hover {
+  background-color: #0056b3;
+}
+
+  </style>
+</head>
+<body>
+  <header>Bitácora Óptica AAXIS</header>
+  <div class="container">
+   <div class="actions">
+  <div class="action-box" onclick="mostrarFormulario()">
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <svg width="40" height="40" fill="white" viewBox="0 0 24 24">
+        <path d="M15 14c2.7 0 5 2.3 5 5v1H4v-1c0-2.7 2.3-5 5-5h6zm-3-2c-1.7 0-3-1.3-3-3s1.3-3 
+                 3-3 3 1.3 3 3-1.3 3-3 3zM19 3h2v4h4v2h-4v4h-2V9h-4V7h4V3z"/>
+      </svg>
+      <span style="margin-top: 10px;">Agregar nuevo cliente</span>
+    </div>
+  </div>
+
+  <div class="action-box" onclick="mostrarBusqueda()">
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <svg width="40" height="40" fill="white" viewBox="0 0 24 24">
+        <path d="M10 2a8 8 0 015.3 13.9l5.4 5.4-1.4 1.4-5.4-5.4A8 8 0 1110 2zm0 
+                 2a6 6 0 100 12 6 6 0 000-12z"/>
+      </svg>
+      <span style="margin-top: 10px;">Buscar cliente</span>
+    </div>
+  </div>
+</div>
+
+
+    <div class="form-section" id="formularioCliente">
+      <h3>Agregar Cliente</h3>
+      <form id="clienteForm">
+        <label>Nombre del cliente:</label>
+        <input type="text" name="nombre" required>
+        <label>Armazón:</label>
+        <input type="text" name="armazon">
+        <label>Graduación:</label>
+        <input type="text" name="graduacion">
+        <label>Material:</label>
+        <input type="text" name="material">
+        <label>Orden (fecha):</label>
+        <input type="date" name="orden">
+        <label>LADAC (fecha):</label>
+        <input type="date" name="ladac">
+        <label>Entrega (fecha):</label>
+        <input type="date" name="entrega">
+        <label>Teléfono:</label>
+        <input type="number" name="telefono">
+        <label>Descripción:</label>
+        <textarea name="descripcion"></textarea>
+        <button type="submit">Agregar nuevo cliente</button>
+        <button type="button" onclick="document.getElementById('clienteForm').reset()">Limpiar</button>
+      </form>
+    </div>
+
+    <div class="search-section" id="busquedaCliente">
+      <h3>Buscar Cliente</h3>
+      <input type="text" placeholder="Buscar por nombre, teléfono o fecha..." oninput="buscarCliente(this.value)">
+      <div id="resultadosBusqueda"></div>
+    </div>
+  </div>
+
+  <script>
+    // ⚙️ CONFIGURA TU FIREBASE AQUÍ
+    const firebaseConfig = {
+  apiKey: "AIzaSyAr08Q_WusgIoBw1-dX7n8t6QuG4kv0JtI",
+  authDomain: "bitacarooptica.firebaseapp.com",
+  databaseURL: "https://bitacarooptica-default-rtdb.firebaseio.com",
+  projectId: "bitacarooptica",
+  storageBucket: "bitacarooptica.firebasestorage.app",
+  messagingSenderId: "694465246261",
+  appId: "1:694465246261:web:7ee0524dcbb21c6eceed7c",
+  
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function mostrarFormulario() {
+      document.getElementById('formularioCliente').style.display = 'block';
+      document.getElementById('busquedaCliente').style.display = 'none';
+    }
+
+    function mostrarBusqueda() {
+      document.getElementById('busquedaCliente').style.display = 'block';
+      document.getElementById('formularioCliente').style.display = 'none';
+    }
+
+    document.getElementById("clienteForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const cliente = Object.fromEntries(formData.entries());
+      cliente.visitas = [{ ...cliente, fecha: new Date().toISOString() }];
+
+      const id = Date.now().toString();
+      db.ref("clientes/" + id).set(cliente)
+        .then(() => {
+          alert("Cliente agregado exitosamente.");
+          this.reset();
+        })
+        .catch(err => alert("Error al guardar: " + err));
+    });
+
+    function buscarCliente(valor) {
+  const resultados = document.getElementById("resultadosBusqueda");
+  resultados.innerHTML = "";
+  if (valor.length < 3) return;
+
+  db.ref("clientes").once("value", snapshot => {
+    const data = snapshot.val();
+    if (!data) return resultados.innerHTML = "No hay clientes registrados.";
+    Object.entries(data).forEach(([id, cliente]) => {
+      const match = Object.values(cliente)
+        .join(" ").toLowerCase().includes(valor.toLowerCase());
+      if (match) {
+        const div = document.createElement("div");
+        div.className = "client-result";
+        div.innerHTML = `
+          <strong>${cliente.nombre}</strong><br>
+          Tel: ${cliente.telefono || "-"}<br>
+    
+          <button onclick="verDetalleCliente('${id}')">Ver detalles</button>
+        `;
+        resultados.appendChild(div);
+      }
+    });
+  });
+}
+
+
+    function eliminarCliente(id) {
+      if (confirm("¿Estás seguro de eliminar este cliente y todas sus visitas?")) {
+        db.ref("clientes/" + id).remove()
+          .then(() => alert("Eliminado correctamente."))
+          .catch(err => alert("Error al eliminar: " + err));
+      }
+    }
+    function verDetalleCliente(id) {
+  const resultados = document.getElementById("resultadosBusqueda");
+  resultados.innerHTML = "";
+
+  db.ref("clientes/" + id).once("value", snapshot => {
+    const cliente = snapshot.val();
+    if (!cliente) return;
+
+    const div = document.createElement("div");
+    div.className = "client-result";
+
+    // Mostrar datos en modo visual
+    div.innerHTML = `
+      <h4>Cliente: ${cliente.nombre}</h4>
+      <p><strong>Teléfono:</strong> ${cliente.telefono || "-"}</p>
+     
+
+      <button onclick="mostrarFormularioEdicion('${id}')">Actualizar</button>
+      <button onclick="mostrarFormularioVisita('${id}')">Agregar visita</button>
+      <button onclick="eliminarCliente('${id}')">Eliminar</button>
+
+      <h5>Historial de visitas:</h5>
+      ${cliente.visitas ? cliente.visitas.map((v, i) => `
+        <div class="visit-entry">
+          <strong>Visita ${i + 1}</strong><br>
+          Orden: ${v.orden || "-"}<br>
+          LADAC: ${v.ladac || "-"}<br>
+          Entrega: ${v.entrega || "-"}<br>
+          Material: ${v.material || "-"}<br>
+          Graduación: ${v.graduacion || "-"}<br>
+          Armazón: ${v.armazon || "-"}<br>
+          Descripción: ${v.descripcion || "-"}<br><br>
+        </div>
+      `).join("") : "<p>No hay visitas registradas.</p>"}
+    `;
+
+    resultados.appendChild(div);
+  });
+}
+
+function actualizarCliente(id) {
+  const nuevo = {
+  nombre: document.getElementById("nombre_" + id).value,
+  telefono: document.getElementById("telefono_" + id).value,
+ 
+  descripcion: document.getElementById("descripcion_" + id).value
+};
+
+  db.ref("clientes/" + id).update(nuevo)
+    .then(() => alert("Cliente actualizado correctamente"))
+    .catch(err => alert("Error: " + err));
+}
+
+function agregarVisita(id) {
+  const orden = prompt("Fecha de orden (YYYY-MM-DD):");
+  const ladac = prompt("Fecha de LADAC (YYYY-MM-DD):");
+  const entrega = prompt("Fecha de entrega (YYYY-MM-DD):");
+  const armazon = prompt("Armazón:");
+  const graduacion = prompt("Graduación:");
+  const material = prompt("Material:");
+  const descripcion = prompt("Descripción de la visita:");
+
+  const nuevaVisita = {
+    orden,
+    ladac,
+    entrega,
+    armazon,
+    graduacion,
+    material,
+    descripcion,
+    fecha: new Date().toISOString()
+  };
+
+  db.ref("clientes/" + id + "/visitas").once("value", snapshot => {
+    const visitas = snapshot.val() || [];
+    visitas.push(nuevaVisita);
+    db.ref("clientes/" + id + "/visitas").set(visitas)
+      .then(() => {
+        alert("Visita agregada correctamente.");
+        verDetalleCliente(id);
+      })
+      .catch(err => alert("Error al agregar visita: " + err));
+  });
+}
+
+function mostrarFormularioEdicion(id) {
+  db.ref("clientes/" + id).once("value", snapshot => {
+    const cliente = snapshot.val();
+    if (!cliente) return;
+
+    const resultados = document.getElementById("resultadosBusqueda");
+    resultados.innerHTML = "";
+
+    const div = document.createElement("div");
+    div.className = "client-result";
+
+    div.innerHTML = `
+      <h4>Editar Cliente</h4>
+      <label>Nombre:</label><input id="nombre_${id}" value="${cliente.nombre || ''}">
+      <label>Teléfono:</label><input id="telefono_${id}" value="${cliente.telefono || ''}">
+      
+      <label>Descripción:</label><textarea id="descripcion_${id}">${cliente.descripcion || ''}</textarea>
+      <button onclick="actualizarCliente('${id}')">Guardar cambios</button>
+    `;
+
+    resultados.appendChild(div);
+  });
+}
+
+function guardarActualizacion(id) {
+  const datosActualizados = {
+    nombre: document.getElementById("nombre_" + id).value,
+    telefono: document.getElementById("telefono_" + id).value,
+    armazon: document.getElementById("armazon_" + id).value,
+    material: document.getElementById("material_" + id).value,
+    graduacion: document.getElementById("graduacion_" + id).value,
+    descripcion: document.getElementById("descripcion_" + id).value,
+  };
+
+  db.ref("clientes/" + id).update(datosActualizados)
+    .then(() => {
+      alert("Datos actualizados correctamente");
+      verDetalleCliente(id);
+    })
+    .catch(error => alert("Error: " + error));
+}
+function mostrarFormularioVisita(id) {
+  const resultados = document.getElementById("resultadosBusqueda");
+  const div = document.createElement("div");
+  div.className = "client-result";
+
+  div.innerHTML = `
+    <h4>Agregar Nueva Visita</h4>
+    <label>Orden:</label><input id="orden_visita" type="date">
+    <label>LADAC:</label><input id="ladac_visita" type="date">
+    <label>Entrega:</label><input id="entrega_visita" type="date">
+    <label>Material:</label><input id="material_visita">
+    <label>Graduación:</label><input id="graduacion_visita">
+    <label>Armazón:</label><input id="armazon_visita">
+    <label>Descripción:</label><input id="descripcion_visita">
+    <button onclick="guardarVisita('${id}')">Guardar Visita</button>
+    <button onclick="verDetalleCliente('${id}')">Cancelar</button>
+  `;
+
+  resultados.innerHTML = "";
+  resultados.appendChild(div);
+}
+
+function guardarVisita(id) {
+  const nuevaVisita = {
+    orden: document.getElementById("orden_visita").value,
+    ladac: document.getElementById("ladac_visita").value,
+    entrega: document.getElementById("entrega_visita").value,
+    material: document.getElementById("material_visita").value,
+    graduacion: document.getElementById("graduacion_visita").value,
+    armazon: document.getElementById("armazon_visita").value,
+    descripcion: document.getElementById("descripcion_visita").value,
+  };
+
+  db.ref("clientes/" + id + "/visitas").once("value", snap => {
+    const visitas = snap.val() || [];
+    visitas.push(nuevaVisita);
+    db.ref("clientes/" + id + "/visitas").set(visitas)
+      .then(() => {
+        alert("Visita registrada");
+        verDetalleCliente(id);
+      })
+      .catch(err => alert("Error al guardar visita: " + err));
+  });
+}
+function mostrarFormularioVisita(id) {
+  const resultados = document.getElementById("resultadosBusqueda");
+  resultados.innerHTML = "";
+
+  const form = document.createElement("div");
+  form.className = "client-result";
+  form.innerHTML = `
+    <h4>Agregar nueva visita</h4>
+    <label>Orden:</label><input id="orden_${id}" type="date">
+    <label>LADAC:</label><input id="ladac_${id}" type="date">
+    <label>Entrega:</label><input id="entrega_${id}" type="date">
+    <label>Material:</label><input id="material_${id}" type="text">
+    <label>Graduación:</label><input id="graduacion_${id}" type="text">
+    <label>Armazón:</label><input id="armazon_${id}" type="text">
+    <label>Descripción:</label><textarea id="descripcion_${id}"></textarea>
+    <button onclick="agregarVisita('${id}')">Guardar visita</button>
+  `;
+
+  resultados.appendChild(form);
+}
+
+  </script>
+</body>
+</html>
