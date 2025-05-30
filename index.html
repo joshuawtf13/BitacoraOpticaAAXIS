@@ -68,6 +68,33 @@
 .client-result button:hover {
   background-color: #0056b3;
 }
+#formulario-visita {
+  background-color: white;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+#formulario-visita input,
+#formulario-visita textarea {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+}
+#formulario-visita button {
+  padding: 10px 20px;
+  background-color: #007acc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+#formulario-visita button:hover {
+  background-color: #007acc;
+}
 
   </style>
 </head>
@@ -108,29 +135,43 @@
         <input type="text" name="graduacion">
         <label>Material:</label>
         <input type="text" name="material">
-        <label>Orden (fecha):</label>
+        <label>Orden de Compra (fecha):</label>
         <input type="date" name="orden">
-        <label>LADAC (fecha):</label>
-        <input type="date" name="ladac">
-        <label>Entrega (fecha):</label>
+        
+        <label>Fecha de Entrega (fecha):</label>
         <input type="date" name="entrega">
         <label>Teléfono:</label>
         <input type="number" name="telefono">
-        <label>Descripción:</label>
-        <textarea name="descripcion"></textarea>
+        <label for="fechaNacimiento">Fecha de Nacimiento:</label>
+        <input type="date" id="fechaNacimiento" name="fechaNacimiento" />
+
+        <label>Observaciones:</label>
+        <textarea name="obse"></textarea>
         <button type="submit">Agregar nuevo cliente</button>
-        <button type="button" onclick="document.getElementById('clienteForm').reset()">Limpiar</button>
       </form>
     </div>
 
     <div class="search-section" id="busquedaCliente">
       <h3>Buscar Cliente</h3>
-      <input type="text" placeholder="Buscar por nombre, teléfono o fecha..." oninput="buscarCliente(this.value)">
+      <input type="text" placeholder="Buscar por nombre o teléfono" oninput="buscarCliente(this.value)">
       <div id="resultadosBusqueda"></div>
     </div>
   </div>
+<div id="formulario-visita" style="display: none;">
+  <h3>Agregar Visita</h3>
+  <input type="date" id="orden" placeholder="Fecha de orden"><br>
+  <input type="date" id="entrega" placeholder="Fecha de entrega"><br>
+  <input type="text" id="armazon" placeholder="Armazón"><br>
+  <input type="text" id="graduacion" placeholder="Graduación"><br>
+  <input type="text" id="material" placeholder="Material"><br>
+  <textarea id="observaciones" placeholder="Observaciones"></textarea><br>
+  <button onclick="guardarNuevaVisita()">Guardar Visita</button>
+</div>
+
 
   <script>
+    let clienteSeleccionadoId = null;
+
     // ⚙️ CONFIGURA TU FIREBASE AQUÍ
     const firebaseConfig = {
   apiKey: "AIzaSyAr08Q_WusgIoBw1-dX7n8t6QuG4kv0JtI",
@@ -152,50 +193,91 @@
     }
 
     function mostrarBusqueda() {
-      document.getElementById('busquedaCliente').style.display = 'block';
-      document.getElementById('formularioCliente').style.display = 'none';
+  document.getElementById('busquedaCliente').style.display = 'block';
+  document.getElementById('formularioCliente').style.display = 'none';
+  document.getElementById('formulario-visita').style.display = 'none';
+  document.getElementById('resultadosBusqueda').innerHTML = ""; // Limpia resultados anteriores
+
+  // 🔍 Cargar todos los clientes al mostrar búsqueda
+  db.ref("clientes").once("value", snapshot => {
+    const data = snapshot.val();
+    const resultados = document.getElementById("resultadosBusqueda");
+
+    if (!data) {
+      resultados.innerHTML = "<p>No hay clientes registrados.</p>";
+      return;
     }
 
-    document.getElementById("clienteForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      const cliente = Object.fromEntries(formData.entries());
-      cliente.visitas = [{ ...cliente, fecha: new Date().toISOString() }];
-
-      const id = Date.now().toString();
-      db.ref("clientes/" + id).set(cliente)
-        .then(() => {
-          alert("Cliente agregado exitosamente.");
-          this.reset();
-        })
-        .catch(err => alert("Error al guardar: " + err));
+    Object.entries(data).forEach(([id, cliente]) => {
+      const div = document.createElement("div");
+      div.className = "client-result";
+      div.innerHTML = `
+        <strong>${cliente.nombre}</strong><br>
+        Tel: ${cliente.telefono || "-"}<br>
+        <button onclick="verDetalleCliente('${id}')">Ver detalles</button>
+      `;
+      resultados.appendChild(div);
     });
+  });
+}
+
+
+   
 
     function buscarCliente(valor) {
   const resultados = document.getElementById("resultadosBusqueda");
   resultados.innerHTML = "";
-  if (valor.length < 3) return;
 
-  db.ref("clientes").once("value", snapshot => {
-    const data = snapshot.val();
-    if (!data) return resultados.innerHTML = "No hay clientes registrados.";
-    Object.entries(data).forEach(([id, cliente]) => {
-      const match = Object.values(cliente)
-        .join(" ").toLowerCase().includes(valor.toLowerCase());
-      if (match) {
+  if (valor.trim() === "") {
+    // Si el input está vacío, volver a cargar todos los clientes
+    db.ref("clientes").once("value", snapshot => {
+      const data = snapshot.val();
+
+      if (!data) {
+        resultados.innerHTML = "<p>No hay clientes registrados.</p>";
+        return;
+      }
+
+      Object.entries(data).forEach(([id, cliente]) => {
         const div = document.createElement("div");
         div.className = "client-result";
         div.innerHTML = `
           <strong>${cliente.nombre}</strong><br>
           Tel: ${cliente.telefono || "-"}<br>
-    
+          <button onclick="verDetalleCliente('${id}')">Ver detalles</button>
+        `;
+        resultados.appendChild(div);
+      });
+    });
+    return;
+  }
+
+  // Búsqueda normal si hay texto
+  db.ref("clientes").once("value", snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
+
+    Object.entries(data).forEach(([id, cliente]) => {
+      const nombre = cliente.nombre.toLowerCase();
+      const telefono = cliente.telefono || "";
+      if (nombre.includes(valor.toLowerCase()) || telefono.includes(valor)) {
+        const div = document.createElement("div");
+        div.className = "client-result";
+        div.innerHTML = `
+          <strong>${cliente.nombre}</strong><br>
+          Tel: ${cliente.telefono || "-"}<br>
           <button onclick="verDetalleCliente('${id}')">Ver detalles</button>
         `;
         resultados.appendChild(div);
       }
     });
+
+    if (resultados.innerHTML === "") {
+      resultados.innerHTML = "<p>No se encontraron coincidencias.</p>";
+    }
   });
 }
+
 
 
     function eliminarCliente(id) {
@@ -205,9 +287,10 @@
           .catch(err => alert("Error al eliminar: " + err));
       }
     }
-    function verDetalleCliente(id) {
+   function verDetalleCliente(id) {
   const resultados = document.getElementById("resultadosBusqueda");
   resultados.innerHTML = "";
+  clienteSeleccionadoId = id;
 
   db.ref("clientes/" + id).once("value", snapshot => {
     const cliente = snapshot.val();
@@ -216,186 +299,197 @@
     const div = document.createElement("div");
     div.className = "client-result";
 
-    // Mostrar datos en modo visual
-    div.innerHTML = `
+    div.innerHTML += `
+      <div style="margin-top: 20px;">
+        <button onclick="mostrarBusqueda()">Regresar a búsqueda</button>
+      </div>
+
       <h4>Cliente: ${cliente.nombre}</h4>
       <p><strong>Teléfono:</strong> ${cliente.telefono || "-"}</p>
-     
+      <p><strong>Fecha de Nacimiento:</strong> ${cliente.fechaNacimiento ? new Date(cliente.fechaNacimiento).toLocaleDateString() : "-"}</p>
+
 
       <button onclick="mostrarFormularioEdicion('${id}')">Actualizar</button>
       <button onclick="mostrarFormularioVisita('${id}')">Agregar visita</button>
       <button onclick="eliminarCliente('${id}')">Eliminar</button>
 
       <h5>Historial de visitas:</h5>
-      ${cliente.visitas ? cliente.visitas.map((v, i) => `
-        <div class="visit-entry">
-          <strong>Visita ${i + 1}</strong><br>
-          Orden: ${v.orden || "-"}<br>
-          LADAC: ${v.ladac || "-"}<br>
-          Entrega: ${v.entrega || "-"}<br>
-          Material: ${v.material || "-"}<br>
-          Graduación: ${v.graduacion || "-"}<br>
-          Armazón: ${v.armazon || "-"}<br>
-          Descripción: ${v.descripcion || "-"}<br><br>
-        </div>
-      `).join("") : "<p>No hay visitas registradas.</p>"}
+      ${
+        cliente.visitas
+          ? cliente.visitas.map((v, i) => `
+              <div class="visit-entry">
+                <strong>Visita ${i + 1}</strong><br>
+                Fecha de Orden: ${v.orden || "-"}<br>
+                Fecha de Entrega: ${v.entrega || "-"}<br>
+                Material: ${v.material || "-"}<br>
+                Graduación: ${v.graduacion || "-"}<br>
+                Armazón: ${v.armazon || "-"}<br>
+                Observaciones: ${v.obse || "-"}
+              </div>
+            `).join("")
+          : "<p>No hay visitas registradas.</p>"
+      }
     `;
-
     resultados.appendChild(div);
   });
 }
 
-function actualizarCliente(id) {
-  const nuevo = {
-  nombre: document.getElementById("nombre_" + id).value,
-  telefono: document.getElementById("telefono_" + id).value,
- 
-  descripcion: document.getElementById("descripcion_" + id).value
-};
 
-  db.ref("clientes/" + id).update(nuevo)
-    .then(() => alert("Cliente actualizado correctamente"))
-    .catch(err => alert("Error: " + err));
+
+function actualizarCliente(id) {
+  const clienteActualizado = {
+    nombre: document.getElementById("nombre_" + id).value,
+    telefono: document.getElementById("telefono_" + id).value
+  };
+
+  db.ref("clientes/" + id).update(clienteActualizado)
+    .then(() => {
+      alert("Cliente actualizado correctamente.");
+      buscarCliente(clienteActualizado.nombre); // Vuelve a cargar resultados
+    })
+    .catch(err => alert("Error al actualizar: " + err));
 }
 
 function agregarVisita(id) {
-  const orden = prompt("Fecha de orden (YYYY-MM-DD):");
-  const ladac = prompt("Fecha de LADAC (YYYY-MM-DD):");
-  const entrega = prompt("Fecha de entrega (YYYY-MM-DD):");
-  const armazon = prompt("Armazón:");
-  const graduacion = prompt("Graduación:");
-  const material = prompt("Material:");
-  const descripcion = prompt("Descripción de la visita:");
+    const orden = prompt("Fecha de orden (YYYY-MM-DD):");
+    const entrega = prompt("Fecha de entrega (YYYY-MM-DD):");
+    const armazon = prompt("Armazón:");
+    const graduacion = prompt("Graduación:");
+    const material = prompt("Material:");
+    const observaciones = prompt("Observaciones de la visita:");
 
-  const nuevaVisita = {
-    orden,
-    ladac,
-    entrega,
-    armazon,
-    graduacion,
-    material,
-    descripcion,
-    fecha: new Date().toISOString()
-  };
+    const nuevaVisita = {
+      orden,
+      entrega,
+      armazon,
+      graduacion,
+      material,
+      observaciones,
+      fecha: new Date().toISOString()
+    };
 
-  db.ref("clientes/" + id + "/visitas").once("value", snapshot => {
-    const visitas = snapshot.val() || [];
-    visitas.push(nuevaVisita);
-    db.ref("clientes/" + id + "/visitas").set(visitas)
-      .then(() => {
-        alert("Visita agregada correctamente.");
-        verDetalleCliente(id);
-      })
-      .catch(err => alert("Error al agregar visita: " + err));
-  });
-}
+    db.ref("clientes/" + id + "/visitas").once("value", snapshot => {
+      const visitas = snapshot.val() || [];
+      visitas.push(nuevaVisita);
+      db.ref("clientes/" + id + "/visitas").set(visitas)
+        .then(() => {
+          alert("Visita agregada correctamente.");
+          verDetalleCliente(id);
+        })
+        .catch(err => alert("Error al agregar visita: " + err));
+    });
+  }
+
+
 
 function mostrarFormularioEdicion(id) {
   db.ref("clientes/" + id).once("value", snapshot => {
     const cliente = snapshot.val();
-    if (!cliente) return;
+    if (!cliente) return alert("Cliente no encontrado.");
 
-    const resultados = document.getElementById("resultadosBusqueda");
-    resultados.innerHTML = "";
+    document.getElementById('formularioCliente').style.display = 'block';
+    document.getElementById('busquedaCliente').style.display = 'none';
+
+    const form = document.getElementById('clienteForm');
+    form.nombre.value = cliente.nombre || "";
+    form.armazon.value = cliente.armazon || "";
+    form.graduacion.value = cliente.graduacion || "";
+    form.material.value = cliente.material || "";
+    form.orden.value = cliente.orden || "";
+    form.entrega.value = cliente.entrega || "";
+    form.telefono.value = cliente.telefono || "";
+    form.obse.value = cliente.obse || "";
+
+    clienteSeleccionadoId = id;
+  });
+}
+
+document.getElementById("clienteForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  const cliente = Object.fromEntries(formData.entries());
+
+  if (clienteSeleccionadoId) {
+    // Actualiza datos
+    db.ref("clientes/" + clienteSeleccionadoId).update(cliente)
+      .then(() => {
+        alert("Cliente actualizado exitosamente.");
+        this.reset();
+        clienteSeleccionadoId = null;
+        mostrarBusqueda();
+      })
+      .catch(err => alert("Error al actualizar: " + err));
+  } else {
+    // Agrega nuevo cliente
+    cliente.visitas = [{ ...cliente, fecha: new Date().toISOString() }];
+    const id = Date.now().toString();
+    db.ref("clientes/" + id).set(cliente)
+      .then(() => {
+        alert("Cliente agregado exitosamente.");
+        this.reset();
+      })
+      .catch(err => alert("Error al guardar: " + err));
+  }
+});
+
+  function mostrarFormularioVisita(id) {
+  clienteSeleccionadoId = id;
+  document.getElementById("formulario-visita").style.display = "block";
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function guardarNuevaVisita() {
+  if (!clienteSeleccionadoId) return alert("Cliente no seleccionado.");
+
+  const visita = {
+    orden: document.getElementById("orden").value,
+    entrega: document.getElementById("entrega").value,
+    armazon: document.getElementById("armazon").value,
+    graduacion: document.getElementById("graduacion").value,
+    material: document.getElementById("material").value,
+    obse: document.getElementById("observaciones").value,
+    fecha: new Date().toISOString()
+  };
+
+  const ref = db.ref("clientes/" + clienteSeleccionadoId + "/visitas");
+  ref.once("value").then(snapshot => {
+    const visitas = snapshot.val() || [];
+    visitas.push(visita);
+    return ref.set(visitas);
+  }).then(() => {
+    alert("Visita registrada correctamente.");
+    document.getElementById("formulario-visita").style.display = "none";
+    verDetalleCliente(clienteSeleccionadoId);
+  }).catch(err => alert("Error al guardar visita: " + err));
+}
+
+
+function mostrarFormularioEdicion(id) {
+  const resultados = document.getElementById("resultadosBusqueda");
+  resultados.innerHTML = "";
+
+  db.ref("clientes/" + id).once("value", snapshot => {
+    const cliente = snapshot.val();
+    if (!cliente) return;
 
     const div = document.createElement("div");
     div.className = "client-result";
 
     div.innerHTML = `
       <h4>Editar Cliente</h4>
-      <label>Nombre:</label><input id="nombre_${id}" value="${cliente.nombre || ''}">
-      <label>Teléfono:</label><input id="telefono_${id}" value="${cliente.telefono || ''}">
-      
-      <label>Descripción:</label><textarea id="descripcion_${id}">${cliente.descripcion || ''}</textarea>
-      <button onclick="actualizarCliente('${id}')">Guardar cambios</button>
+      <label>Nombre:</label>
+      <input type="text" id="nombre_${id}" value="${cliente.nombre || ""}">
+      <label>Teléfono:</label>
+      <input type="text" id="telefono_${id}" value="${cliente.telefono || ""}">
+      <button onclick="actualizarCliente('${id}')">Guardar Cambios</button>
+      <button onclick="verDetalleCliente('${id}')">Cancelar</button>
     `;
 
     resultados.appendChild(div);
   });
 }
 
-function guardarActualizacion(id) {
-  const datosActualizados = {
-    nombre: document.getElementById("nombre_" + id).value,
-    telefono: document.getElementById("telefono_" + id).value,
-    armazon: document.getElementById("armazon_" + id).value,
-    material: document.getElementById("material_" + id).value,
-    graduacion: document.getElementById("graduacion_" + id).value,
-    descripcion: document.getElementById("descripcion_" + id).value,
-  };
-
-  db.ref("clientes/" + id).update(datosActualizados)
-    .then(() => {
-      alert("Datos actualizados correctamente");
-      verDetalleCliente(id);
-    })
-    .catch(error => alert("Error: " + error));
-}
-function mostrarFormularioVisita(id) {
-  const resultados = document.getElementById("resultadosBusqueda");
-  const div = document.createElement("div");
-  div.className = "client-result";
-
-  div.innerHTML = `
-    <h4>Agregar Nueva Visita</h4>
-    <label>Orden:</label><input id="orden_visita" type="date">
-    <label>LADAC:</label><input id="ladac_visita" type="date">
-    <label>Entrega:</label><input id="entrega_visita" type="date">
-    <label>Material:</label><input id="material_visita">
-    <label>Graduación:</label><input id="graduacion_visita">
-    <label>Armazón:</label><input id="armazon_visita">
-    <label>Descripción:</label><input id="descripcion_visita">
-    <button onclick="guardarVisita('${id}')">Guardar Visita</button>
-    <button onclick="verDetalleCliente('${id}')">Cancelar</button>
-  `;
-
-  resultados.innerHTML = "";
-  resultados.appendChild(div);
-}
-
-function guardarVisita(id) {
-  const nuevaVisita = {
-    orden: document.getElementById("orden_visita").value,
-    ladac: document.getElementById("ladac_visita").value,
-    entrega: document.getElementById("entrega_visita").value,
-    material: document.getElementById("material_visita").value,
-    graduacion: document.getElementById("graduacion_visita").value,
-    armazon: document.getElementById("armazon_visita").value,
-    descripcion: document.getElementById("descripcion_visita").value,
-  };
-
-  db.ref("clientes/" + id + "/visitas").once("value", snap => {
-    const visitas = snap.val() || [];
-    visitas.push(nuevaVisita);
-    db.ref("clientes/" + id + "/visitas").set(visitas)
-      .then(() => {
-        alert("Visita registrada");
-        verDetalleCliente(id);
-      })
-      .catch(err => alert("Error al guardar visita: " + err));
-  });
-}
-function mostrarFormularioVisita(id) {
-  const resultados = document.getElementById("resultadosBusqueda");
-  resultados.innerHTML = "";
-
-  const form = document.createElement("div");
-  form.className = "client-result";
-  form.innerHTML = `
-    <h4>Agregar nueva visita</h4>
-    <label>Orden:</label><input id="orden_${id}" type="date">
-    <label>LADAC:</label><input id="ladac_${id}" type="date">
-    <label>Entrega:</label><input id="entrega_${id}" type="date">
-    <label>Material:</label><input id="material_${id}" type="text">
-    <label>Graduación:</label><input id="graduacion_${id}" type="text">
-    <label>Armazón:</label><input id="armazon_${id}" type="text">
-    <label>Descripción:</label><textarea id="descripcion_${id}"></textarea>
-    <button onclick="agregarVisita('${id}')">Guardar visita</button>
-  `;
-
-  resultados.appendChild(form);
-}
-
   </script>
 </body>
 </html>
+
