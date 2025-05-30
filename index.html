@@ -313,11 +313,11 @@
       <button onclick="mostrarFormularioVisita('${id}')">Agregar visita</button>
       <button onclick="eliminarCliente('${id}')">Eliminar</button>
 
-      <h5>Historial de visitas:</h5>
+     <h5>Historial de visitas:</h5>
 ${
   cliente.visitas
     ? cliente.visitas.map((v, i) => `
-        <div class="visit-entry">
+        <div class="visit-entry" id="visita-${i}">
           <strong>Visita ${i + 1}</strong><br>
           Fecha de Orden: ${v.orden || "-"}<br>
           Fecha de Entrega: ${v.entrega || "-"}<br>
@@ -325,11 +325,14 @@ ${
           Graduación: ${v.graduacion || "-"}<br>
           Armazón: ${v.armazon || "-"}<br>
           Observaciones: ${v.obse || "-"}<br>
+          <button onclick="mostrarFormularioActualizarVisita('${id}', ${i})">Actualizar visita</button>
           <button onclick="eliminarVisita('${id}', ${i})">Eliminar visita</button>
+          <div id="formularioActualizarVisita-${i}"></div>
         </div>
       `).join("")
     : "<p>No hay visitas registradas.</p>"
 }
+
     `;
     resultados.appendChild(div);
   });
@@ -515,6 +518,64 @@ function eliminarVisita(idCliente, index) {
         });
     });
   }
+}
+function mostrarFormularioActualizarVisita(idCliente, index) {
+  const ref = db.ref("clientes/" + idCliente);
+  ref.once("value", snapshot => {
+    const cliente = snapshot.val();
+    if (!cliente || !cliente.visitas || !cliente.visitas[index]) return;
+
+    const visita = cliente.visitas[index];
+    const contenedor = document.getElementById(`formularioActualizarVisita-${index}`);
+
+    contenedor.innerHTML = `
+      <form onsubmit="guardarActualizacionVisita(event, '${idCliente}', ${index})" class="form-editar-visita">
+        <label>Fecha de Orden: <input type="date" name="orden" value="${visita.orden || ""}" required></label><br>
+        <label>Fecha de Entrega: <input type="date" name="entrega" value="${visita.entrega || ""}" required></label><br>
+        <label>Material: <input type="text" name="material" value="${visita.material || ""}" required></label><br>
+        <label>Graduación: <input type="text" name="graduacion" value="${visita.graduacion || ""}" required></label><br>
+        <label>Armazón: <input type="text" name="armazon" value="${visita.armazon || ""}" required></label><br>
+        <label>Observaciones: <textarea name="obse">${visita.obse || ""}</textarea></label><br>
+        <button type="submit">Guardar cambios</button>
+        <button type="button" onclick="cancelarEdicionVisita(${index})">Cancelar</button>
+      </form>
+    `;
+  });
+}
+function guardarActualizacionVisita(event, idCliente, index) {
+  event.preventDefault();
+  const form = event.target;
+
+  const visitaActualizada = {
+    orden: form.orden.value,
+    entrega: form.entrega.value,
+    material: form.material.value,
+    graduacion: form.graduacion.value,
+    armazon: form.armazon.value,
+    obse: form.obse.value
+  };
+
+  const ref = db.ref("clientes/" + idCliente);
+  ref.once("value", snapshot => {
+    const cliente = snapshot.val();
+    if (!cliente || !cliente.visitas || !cliente.visitas[index]) return;
+
+    cliente.visitas[index] = visitaActualizada;
+
+    ref.update({ visitas: cliente.visitas })
+      .then(() => {
+        alert("Visita actualizada correctamente.");
+        verDetalleCliente(idCliente); // Recargar los detalles
+      })
+      .catch(error => {
+        console.error("Error al actualizar visita:", error);
+        alert("Error al guardar los cambios.");
+      });
+  });
+}
+function cancelarEdicionVisita(index) {
+  const contenedor = document.getElementById(`formularioActualizarVisita-${index}`);
+  contenedor.innerHTML = ""; // Limpia el formulario
 }
 
   </script>
