@@ -579,9 +579,12 @@ function cancelarEdicionVisita(index) {
   contenedor.innerHTML = ""; // Limpia el formulario
 }
 function cancelarFormularioVisita() {
-  const formulario = document.getElementById("formularioVisita");
-  if (formulario) formulario.remove();
+  const formulario = document.getElementById("formulario-visita");
+  if (formulario) {
+    formulario.style.display = "none";
+  }
 }
+
 
   </script>
 </body>
