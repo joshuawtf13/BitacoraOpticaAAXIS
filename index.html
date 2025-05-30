@@ -314,21 +314,22 @@
       <button onclick="eliminarCliente('${id}')">Eliminar</button>
 
       <h5>Historial de visitas:</h5>
-      ${
-        cliente.visitas
-          ? cliente.visitas.map((v, i) => `
-              <div class="visit-entry">
-                <strong>Visita ${i + 1}</strong><br>
-                Fecha de Orden: ${v.orden || "-"}<br>
-                Fecha de Entrega: ${v.entrega || "-"}<br>
-                Material: ${v.material || "-"}<br>
-                Graduación: ${v.graduacion || "-"}<br>
-                Armazón: ${v.armazon || "-"}<br>
-                Observaciones: ${v.obse || "-"}
-              </div>
-            `).join("")
-          : "<p>No hay visitas registradas.</p>"
-      }
+${
+  cliente.visitas
+    ? cliente.visitas.map((v, i) => `
+        <div class="visit-entry">
+          <strong>Visita ${i + 1}</strong><br>
+          Fecha de Orden: ${v.orden || "-"}<br>
+          Fecha de Entrega: ${v.entrega || "-"}<br>
+          Material: ${v.material || "-"}<br>
+          Graduación: ${v.graduacion || "-"}<br>
+          Armazón: ${v.armazon || "-"}<br>
+          Observaciones: ${v.obse || "-"}<br>
+          <button onclick="eliminarVisita('${id}', ${i})">Eliminar visita</button>
+        </div>
+      `).join("")
+    : "<p>No hay visitas registradas.</p>"
+}
     `;
     resultados.appendChild(div);
   });
@@ -487,6 +488,33 @@ function mostrarFormularioEdicion(id) {
 
     resultados.appendChild(div);
   });
+}
+function eliminarVisita(idCliente, index) {
+  if (confirm("¿Estás seguro de eliminar esta visita?")) {
+    const clienteRef = db.ref("clientes/" + idCliente);
+
+    clienteRef.once("value", snapshot => {
+      const cliente = snapshot.val();
+      if (!cliente || !cliente.visitas || !Array.isArray(cliente.visitas)) {
+        alert("No se encontró la visita.");
+        return;
+      }
+
+      // Eliminar la visita del array
+      cliente.visitas.splice(index, 1);
+
+      // Actualizar en Firebase
+      clienteRef.update({ visitas: cliente.visitas })
+        .then(() => {
+          alert("Visita eliminada correctamente.");
+          verDetalleCliente(idCliente); // Recargar detalles
+        })
+        .catch(error => {
+          console.error("Error eliminando visita:", error);
+          alert("Error al eliminar la visita.");
+        });
+    });
+  }
 }
 
   </script>
