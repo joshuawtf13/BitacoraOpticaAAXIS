@@ -166,6 +166,7 @@
   <input type="text" id="material" placeholder="Material"><br>
   <textarea id="observaciones" placeholder="Observaciones"></textarea><br>
   <button onclick="guardarNuevaVisita()">Guardar Visita</button>
+  <button type="button" onclick="cancelarFormularioVisita()">Cancelar</button>
 </div>
 
 
@@ -576,6 +577,10 @@ function guardarActualizacionVisita(event, idCliente, index) {
 function cancelarEdicionVisita(index) {
   const contenedor = document.getElementById(`formularioActualizarVisita-${index}`);
   contenedor.innerHTML = ""; // Limpia el formulario
+}
+function cancelarFormularioVisita() {
+  const formulario = document.getElementById("formularioVisita");
+  if (formulario) formulario.remove();
 }
 
   </script>
