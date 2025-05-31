@@ -331,7 +331,7 @@ ${
           Fecha de Orden: ${v.orden || "-"}<br>
           Fecha de Entrega: ${v.entrega || "-"}<br>
           Material: ${v.material || "-"}<br>
-          <label>Graduación</label><br>
+          <label>Graduación:</label><br>
           O.I: ${v.ojoiz || "-"}<br>
           O.D: ${v.ojode || "-"}<br>
           ADD.: ${v.add || "-"}<br>
@@ -370,7 +370,9 @@ function agregarVisita(id) {
     const orden = prompt("Fecha de orden (YYYY-MM-DD):");
     const entrega = prompt("Fecha de entrega (YYYY-MM-DD):");
     const armazon = prompt("Armazón:");
-    const graduacion = prompt("Graduación:");
+    const ojoiz = prompt("O.I:");
+  const ojode = prompt("O.D:");
+  const add = prompt("ADD.:");
     const material = prompt("Material:");
     const observaciones = prompt("Observaciones de la visita:");
 
@@ -378,7 +380,9 @@ function agregarVisita(id) {
       orden,
       entrega,
       armazon,
-      graduacion,
+      ojoiz,
+      ojode,
+      add,
       material,
       observaciones,
       fecha: new Date().toISOString()
@@ -409,7 +413,9 @@ function mostrarFormularioEdicion(id) {
     const form = document.getElementById('clienteForm');
     form.nombre.value = cliente.nombre || "";
     form.armazon.value = cliente.armazon || "";
-    form.graduacion.value = cliente.graduacion || "";
+    form.ojoiz.value = cliente.ojoiz || "";
+    form.ojode.value = cliente.ojode || "";
+    form.add.value = cliente.add || "";
     form.material.value = cliente.material || "";
     form.orden.value = cliente.orden || "";
     form.entrega.value = cliente.entrega || "";
@@ -461,7 +467,9 @@ function guardarNuevaVisita() {
     orden: document.getElementById("orden").value,
     entrega: document.getElementById("entrega").value,
     armazon: document.getElementById("armazon").value,
-    graduacion: document.getElementById("graduacion").value,
+    ojoiz: document.getElementById("O.I").value,
+    ojode: document.getElementById("O.D").value,
+    add: document.getElementById("ADD.").value,
     material: document.getElementById("material").value,
     obse: document.getElementById("observaciones").value,
     fecha: new Date().toISOString()
@@ -545,7 +553,9 @@ function mostrarFormularioActualizarVisita(idCliente, index) {
         <label>Fecha de Orden: <input type="date" name="orden" value="${visita.orden || ""}" required></label><br>
         <label>Fecha de Entrega: <input type="date" name="entrega" value="${visita.entrega || ""}" required></label><br>
         <label>Material: <input type="text" name="material" value="${visita.material || ""}" required></label><br>
-        <label>Graduación: <input type="text" name="graduacion" value="${visita.graduacion || ""}" required></label><br>
+        <label>O.I: <input type="text" name="O.I" value="${visita.ojoiz || ""}" required></label><br>
+        <label>O.D: <input type="text" name="O.D" value="${visita.ojode || ""}" required></label><br>
+        <label>ADD.: <input type="text" name="ADD." value="${visita.add || ""}" required></label><br>
         <label>Armazón: <input type="text" name="armazon" value="${visita.armazon || ""}" required></label><br>
         <label>Observaciones: <textarea name="obse">${visita.obse || ""}</textarea></label><br>
         <button type="submit">Guardar cambios</button>
@@ -562,7 +572,9 @@ function guardarActualizacionVisita(event, idCliente, index) {
     orden: form.orden.value,
     entrega: form.entrega.value,
     material: form.material.value,
-    graduacion: form.graduacion.value,
+    ojoiz: form.ojoiz.value,
+    ojode: form.ojode.value,
+    add: form.add.value,
     armazon: form.armazon.value,
     obse: form.obse.value
   };
