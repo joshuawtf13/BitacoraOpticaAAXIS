@@ -136,7 +136,7 @@
         <input type="text" name="ojoiz">
          <label>O.D:</label>
         <input type="text" name="ojode">
-         <label>A.D.D:</label>
+         <label>ADD.:</label>
         <input type="text" name="add">
         <label>Material:</label>
         <input type="text" name="material">
@@ -170,7 +170,7 @@
    <label>Graduación:</label>
   <input type="text" id="ojoiz" placeholder="O.I"><br>
   <input type="text" id="ojode" placeholder="O.D"><br>
-  <input type="text" id="add" placeholder="A.D.D"><br>
+  <input type="text" id="add" placeholder="ADD."><br>
   <input type="text" id="material" placeholder="Material"><br>
   <textarea id="observaciones" placeholder="Observaciones"></textarea><br>
   <button onclick="guardarNuevaVisita()">Guardar Visita</button>
@@ -331,7 +331,10 @@ ${
           Fecha de Orden: ${v.orden || "-"}<br>
           Fecha de Entrega: ${v.entrega || "-"}<br>
           Material: ${v.material || "-"}<br>
-          Graduación: ${v.graduacion || "-"}<br>
+          <label>Graduación:</label>
+          O.I: ${v.ojoiz || "-"}<br>
+          O.D: ${v.ojode || "-"}<br>
+          ADD.: ${v.add || "-"}<br>
           Armazón: ${v.armazon || "-"}<br>
           Observaciones: ${v.obse || "-"}<br>
           <button onclick="mostrarFormularioActualizarVisita('${id}', ${i})">Actualizar visita</button>
