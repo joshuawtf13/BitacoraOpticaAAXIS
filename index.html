@@ -132,10 +132,10 @@
         <label>Armazón:</label>
         <input type="text" name="armazon">
         <label>Graduación:</label>
-         <label>O.I:</label>
-        <input type="text" name="ojoiz">
          <label>O.D:</label>
         <input type="text" name="ojode">
+         <label>O.I:</label>
+        <input type="text" name="ojoiz">
          <label>ADD.:</label>
         <input type="text" name="add">
         <label>Material:</label>
@@ -168,8 +168,8 @@
   <input type="date" id="entrega" placeholder="Fecha de entrega"><br>
   <input type="text" id="armazon" placeholder="Armazón"><br>
    <label>Graduación:</label>
-  <input type="text" id="ojoiz" placeholder="O.I"><br>
   <input type="text" id="ojode" placeholder="O.D"><br>
+  <input type="text" id="ojoiz" placeholder="O.I"><br>
   <input type="text" id="add" placeholder="ADD."><br>
   <input type="text" id="material" placeholder="Material"><br>
   <textarea id="observaciones" placeholder="Observaciones"></textarea><br>
@@ -332,8 +332,8 @@ ${
           Fecha de Entrega: ${v.entrega || "-"}<br>
           Material: ${v.material || "-"}<br>
           <label>Graduación:</label><br>
-          O.I: ${v.ojoiz || "-"}<br>
           O.D: ${v.ojode || "-"}<br>
+          O.I: ${v.ojoiz || "-"}<br>
           ADD.: ${v.add || "-"}<br>
           Armazón: ${v.armazon || "-"}<br>
           Observaciones: ${v.obse || "-"}<br>
@@ -370,8 +370,8 @@ function agregarVisita(id) {
     const orden = prompt("Fecha de orden (YYYY-MM-DD):");
     const entrega = prompt("Fecha de entrega (YYYY-MM-DD):");
     const armazon = prompt("Armazón:");
-    const ojoiz = prompt("O.I:");
-  const ojode = prompt("O.D:");
+    const ojode = prompt("O.D:");
+  const ojoiz = prompt("O.I:");
   const add = prompt("ADD.:");
     const material = prompt("Material:");
     const observaciones = prompt("Observaciones de la visita:");
@@ -380,8 +380,8 @@ function agregarVisita(id) {
       orden,
       entrega,
       armazon,
-      ojoiz,
       ojode,
+      ojoiz,
       add,
       material,
       observaciones,
@@ -413,8 +413,8 @@ function mostrarFormularioEdicion(id) {
     const form = document.getElementById('clienteForm');
     form.nombre.value = cliente.nombre || "";
     form.armazon.value = cliente.armazon || "";
-    form.ojoiz.value = cliente.ojoiz || "";
     form.ojode.value = cliente.ojode || "";
+    form.ojoiz.value = cliente.ojoiz || "";
     form.add.value = cliente.add || "";
     form.material.value = cliente.material || "";
     form.orden.value = cliente.orden || "";
@@ -467,8 +467,8 @@ function guardarNuevaVisita() {
     orden: document.getElementById("orden").value,
     entrega: document.getElementById("entrega").value,
     armazon: document.getElementById("armazon").value,
-    ojoiz: document.getElementById("ojoiz").value,
     ojode: document.getElementById("ojode").value,
+    ojoiz: document.getElementById("ojoiz").value,
     add: document.getElementById("add").value,
     material: document.getElementById("material").value,
     obse: document.getElementById("observaciones").value,
@@ -554,8 +554,8 @@ function mostrarFormularioActualizarVisita(idCliente, index) {
         <label>Fecha de Entrega: <input type="date" name="entrega" value="${visita.entrega || ""}" required></label><br>
         <label>Material: <input type="text" name="material" value="${visita.material || ""}" required></label><br>
         <label>Graduación:</label><br>
-        <label>O.I: <input type="text" name="ojoiz" value="${visita.ojoiz || ""}" required></label><br>
         <label>O.D: <input type="text" name="ojode" value="${visita.ojode || ""}" required></label><br>
+        <label>O.I: <input type="text" name="ojoiz" value="${visita.ojoiz || ""}" required></label><br>
         <label>ADD.: <input type="text" name="add" value="${visita.add || ""}" required></label><br>
         <label>Armazón: <input type="text" name="armazon" value="${visita.armazon || ""}" required></label><br>
         <label>Observaciones: <textarea name="obse">${visita.obse || ""}</textarea></label><br>
@@ -573,8 +573,8 @@ function guardarActualizacionVisita(event, idCliente, index) {
     orden: form.orden.value,
     entrega: form.entrega.value,
     material: form.material.value,
-    ojoiz: form.ojoiz.value,
     ojode: form.ojode.value,
+    ojoiz: form.ojoiz.value,
     add: form.add.value,
     armazon: form.armazon.value,
     obse: form.obse.value
