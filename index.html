@@ -318,7 +318,7 @@
       <p><strong>Fecha de Nacimiento:</strong> ${cliente.fechaNacimiento ? new Date(cliente.fechaNacimiento).toLocaleDateString() : "-"}</p>
 
 
-      <button onclick="mostrarFormularioEdicion('${id}')">Actualizar</button>
+<button onclick="mostrarFormularioEdicionCompleta('${id}')">Actualizar</button>
       <button onclick="mostrarFormularioVisita('${id}')">Agregar visita</button>
       <button onclick="eliminarCliente('${id}')">Eliminar</button>
 
@@ -402,7 +402,7 @@ function agregarVisita(id) {
 
 
 
-function mostrarFormularioEdicion(id) {
+function mostrarFormularioEdicionCompleta(id) {
   db.ref("clientes/" + id).once("value", snapshot => {
     const cliente = snapshot.val();
     if (!cliente) return alert("Cliente no encontrado.");
@@ -420,6 +420,7 @@ function mostrarFormularioEdicion(id) {
     form.orden.value = cliente.orden || "";
     form.entrega.value = cliente.entrega || "";
     form.telefono.value = cliente.telefono || "";
+    form.fechaNacimiento.value = cliente.fechaNacimiento || "";
     form.obse.value = cliente.obse || "";
 
     clienteSeleccionadoId = id;
