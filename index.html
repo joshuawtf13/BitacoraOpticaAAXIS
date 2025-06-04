@@ -223,31 +223,7 @@ let pageSize = 15;
 
   lastKey = null;
   firstLoad = true;
-  cargarClientes(); // llamada a la función de paginación
-
-
-
-  // 🔍 Cargar todos los clientes al mostrar búsqueda
-  db.ref("clientes").once("value", snapshot => {
-    const data = snapshot.val();
-    const resultados = document.getElementById("resultadosBusqueda");
-
-    if (!data) {
-      resultados.innerHTML = "<p>No hay clientes registrados.</p>";
-      return;
-    }
-
-    Object.entries(data).forEach(([id, cliente]) => {
-      const div = document.createElement("div");
-      div.className = "client-result";
-      div.innerHTML = `
-        <strong>${cliente.nombre}</strong><br>
-        Tel: ${cliente.telefono || "-"}<br>
-        <button onclick="verDetalleCliente('${id}')">Ver detalles</button>
-      `;
-      resultados.appendChild(div);
-    });
-  });
+  cargarClientes(); // ✅ llamada correcta
 }
 
 
