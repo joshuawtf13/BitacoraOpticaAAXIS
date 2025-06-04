@@ -187,6 +187,10 @@
 
 
   <script>
+    let lastKey = null;
+let firstLoad = true;
+let pageSize = 15;
+
     let clienteSeleccionadoId = null;
 
     // ⚙️ CONFIGURA TU FIREBASE AQUÍ
@@ -211,11 +215,16 @@
   document.getElementById('busquedaCliente').style.display = 'none';
     }
 
-    function mostrarBusqueda() {
+   function mostrarBusqueda() {
   document.getElementById('busquedaCliente').style.display = 'block';
   document.getElementById('formularioCliente').style.display = 'none';
   document.getElementById('formulario-visita').style.display = 'none';
-  document.getElementById('resultadosBusqueda').innerHTML = ""; // Limpia resultados anteriores
+  document.getElementById('resultadosBusqueda').innerHTML = "";
+
+  lastKey = null;
+  firstLoad = true;
+  cargarClientes();
+}
 
   // 🔍 Cargar todos los clientes al mostrar búsqueda
   db.ref("clientes").once("value", snapshot => {
@@ -637,6 +646,61 @@ function cancelarFormularioVisita() {
   if (formulario) {
     formulario.style.display = "none";
   }
+}
+function cargarClientes() {
+  const resultados = document.getElementById("resultadosBusqueda");
+
+  let ref = db.ref("clientes").orderByKey().limitToFirst(pageSize + 1); // Cargar uno más para saber si hay más
+
+  if (lastKey && !firstLoad) {
+    ref = db.ref("clientes").orderByKey().startAt(lastKey).limitToFirst(pageSize + 1);
+  }
+
+  ref.once("value", snapshot => {
+    const data = snapshot.val();
+    if (!data) {
+      resultados.innerHTML = "<p>No hay clientes registrados.</p>";
+      return;
+    }
+
+    const keys = Object.keys(data);
+    if (!firstLoad) {
+      keys.shift(); // quitar el duplicado (el que ya fue mostrado como último en la página anterior)
+    }
+
+    // Guardar nueva última clave
+    lastKey = keys[keys.length - 1];
+
+    // Mostrar clientes
+    keys.slice(0, pageSize).forEach(id => {
+      const cliente = data[id];
+      const div = document.createElement("div");
+      div.className = "client-result";
+      div.innerHTML = `
+        <strong>${cliente.nombre}</strong><br>
+        Tel: ${cliente.telefono || "-"}<br>
+        <button onclick="verDetalleCliente('${id}')">Ver detalles</button>
+      `;
+      resultados.appendChild(div);
+    });
+
+    // Botón de siguiente página
+    const botones = document.getElementById("botonesPaginacion") || document.createElement("div");
+    botones.id = "botonesPaginacion";
+    botones.innerHTML = "";
+
+    if (keys.length > pageSize) {
+      const btn = document.createElement("button");
+      btn.textContent = "Siguiente página";
+      btn.onclick = () => {
+        firstLoad = false;
+        cargarClientes();
+      };
+      botones.appendChild(btn);
+    }
+
+    resultados.appendChild(botones);
+  });
 }
 
 
