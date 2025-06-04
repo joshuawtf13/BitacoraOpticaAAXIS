@@ -197,8 +197,10 @@
     const db = firebase.database();
 
     function mostrarFormulario() {
-      document.getElementById('formularioCliente').style.display = 'block';
-      document.getElementById('busquedaCliente').style.display = 'none';
+      clienteSeleccionadoId = null; // ✅ Limpia estado anterior
+  document.getElementById('clienteForm').reset(); // ✅ Limpia los campos del formulario
+  document.getElementById('formularioCliente').style.display = 'block';
+  document.getElementById('busquedaCliente').style.display = 'none';
     }
 
     function mostrarBusqueda() {
@@ -446,7 +448,9 @@ document.getElementById("clienteForm").addEventListener("submit", function(e) {
     // Agrega nuevo cliente
     cliente.visitas = [{ ...cliente, fecha: new Date().toISOString() }];
    const nuevoClienteRef = db.ref("clientes").push();
+cliente.id = nuevoClienteRef.key;
 nuevoClienteRef.set(cliente)
+
 
       .then(() => {
         alert("Cliente agregado exitosamente.");
