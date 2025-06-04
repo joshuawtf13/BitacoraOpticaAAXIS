@@ -445,8 +445,9 @@ document.getElementById("clienteForm").addEventListener("submit", function(e) {
   } else {
     // Agrega nuevo cliente
     cliente.visitas = [{ ...cliente, fecha: new Date().toISOString() }];
-    const id = Date.now().toString();
-    db.ref("clientes/" + id).set(cliente)
+   const nuevoClienteRef = db.ref("clientes").push();
+nuevoClienteRef.set(cliente)
+
       .then(() => {
         alert("Cliente agregado exitosamente.");
         this.reset();
