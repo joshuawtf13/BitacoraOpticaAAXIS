@@ -223,8 +223,9 @@ let pageSize = 15;
 
   lastKey = null;
   firstLoad = true;
-  cargarClientes();
+  cargarClientes(); // llamada a la función de paginación
 }
+
 
   // 🔍 Cargar todos los clientes al mostrar búsqueda
   db.ref("clientes").once("value", snapshot => {
@@ -637,20 +638,10 @@ function guardarActualizacionVisita(event, idCliente, index) {
       });
   });
 }
-function cancelarEdicionVisita(index) {
-  const contenedor = document.getElementById(`formularioActualizarVisita-${index}`);
-  contenedor.innerHTML = ""; // Limpia el formulario
-}
-function cancelarFormularioVisita() {
-  const formulario = document.getElementById("formulario-visita");
-  if (formulario) {
-    formulario.style.display = "none";
-  }
-}
-function cargarClientes() {
+    function cargarClientes() {
   const resultados = document.getElementById("resultadosBusqueda");
 
-  let ref = db.ref("clientes").orderByKey().limitToFirst(pageSize + 1); // Cargar uno más para saber si hay más
+  let ref = db.ref("clientes").orderByKey().limitToFirst(pageSize + 1);
 
   if (lastKey && !firstLoad) {
     ref = db.ref("clientes").orderByKey().startAt(lastKey).limitToFirst(pageSize + 1);
@@ -665,13 +656,11 @@ function cargarClientes() {
 
     const keys = Object.keys(data);
     if (!firstLoad) {
-      keys.shift(); // quitar el duplicado (el que ya fue mostrado como último en la página anterior)
+      keys.shift(); // evitar duplicado
     }
 
-    // Guardar nueva última clave
     lastKey = keys[keys.length - 1];
 
-    // Mostrar clientes
     keys.slice(0, pageSize).forEach(id => {
       const cliente = data[id];
       const div = document.createElement("div");
@@ -684,7 +673,6 @@ function cargarClientes() {
       resultados.appendChild(div);
     });
 
-    // Botón de siguiente página
     const botones = document.getElementById("botonesPaginacion") || document.createElement("div");
     botones.id = "botonesPaginacion";
     botones.innerHTML = "";
@@ -702,6 +690,18 @@ function cargarClientes() {
     resultados.appendChild(botones);
   });
 }
+
+function cancelarEdicionVisita(index) {
+  const contenedor = document.getElementById(`formularioActualizarVisita-${index}`);
+  contenedor.innerHTML = ""; // Limpia el formulario
+}
+function cancelarFormularioVisita() {
+  const formulario = document.getElementById("formulario-visita");
+  if (formulario) {
+    formulario.style.display = "none";
+  }
+}
+
 
 
   </script>
