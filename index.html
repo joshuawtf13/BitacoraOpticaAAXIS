@@ -129,6 +129,14 @@
       <form id="clienteForm">
         <label>Nombre del cliente:</label>
         <input type="text" name="nombre" required>
+        <label>Dirección:</label>
+<label>Calle:</label>
+<input type="text" name="calle" />
+<label>Colonia:</label>
+<input type="text" name="colonia" />
+<label>Código Postal:</label>
+<input type="text" name="cp" />
+
         <label>Armazón:</label>
         <input type="text" name="armazon">
         <label>Graduación:</label>
@@ -318,6 +326,11 @@
       <h4>Cliente: ${cliente.nombre}</h4>
       <p><strong>Teléfono:</strong> ${cliente.telefono || "-"}</p>
       <p><strong>Fecha de Nacimiento:</strong> ${cliente.fechaNacimiento ? new Date(cliente.fechaNacimiento).toLocaleDateString() : "-"}</p>
+      <p><strong>Dirección:</strong><br>
+  Calle: ${cliente.calle || "-"}<br>
+  Colonia: ${cliente.colonia || "-"}<br>
+  C.P: ${cliente.cp || "-"}
+</p>
 
 
 <button onclick="mostrarFormularioEdicionCompleta('${id}')">Actualizar</button>
@@ -356,9 +369,13 @@ ${
 
 function actualizarCliente(id) {
   const clienteActualizado = {
-    nombre: document.getElementById("nombre_" + id).value,
-    telefono: document.getElementById("telefono_" + id).value
-  };
+  nombre: document.getElementById("nombre_" + id).value,
+  telefono: document.getElementById("telefono_" + id).value,
+  calle: document.getElementById("calle_" + id).value,
+  colonia: document.getElementById("colonia_" + id).value,
+  cp: document.getElementById("cp_" + id).value
+};
+
 
   db.ref("clientes/" + id).update(clienteActualizado)
     .then(() => {
@@ -511,6 +528,13 @@ function mostrarFormularioEdicion(id) {
       <input type="text" id="nombre_${id}" value="${cliente.nombre || ""}">
       <label>Teléfono:</label>
       <input type="text" id="telefono_${id}" value="${cliente.telefono || ""}">
+      <label>Calle:</label>
+<input type="text" id="calle_${id}" value="${cliente.calle || ""}">
+<label>Colonia:</label>
+<input type="text" id="colonia_${id}" value="${cliente.colonia || ""}">
+<label>Código Postal:</label>
+<input type="text" id="cp_${id}" value="${cliente.cp || ""}">
+
       <button onclick="actualizarCliente('${id}')">Guardar Cambios</button>
       <button onclick="verDetalleCliente('${id}')">Cancelar</button>
     `;
