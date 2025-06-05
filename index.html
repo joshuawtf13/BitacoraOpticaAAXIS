@@ -568,14 +568,14 @@ function mostrarFormularioActualizarVisita(idCliente, index) {
 
     contenedor.innerHTML = `
       <form onsubmit="guardarActualizacionVisita(event, '${idCliente}', ${index})" class="form-editar-visita">
-        <label>Fecha de Orden: <input type="date" name="orden" value="${visita.orden || ""}" required></label><br>
-        <label>Fecha de Entrega: <input type="date" name="entrega" value="${visita.entrega || ""}" required></label><br>
-        <label>Material: <input type="text" name="material" value="${visita.material || ""}" required></label><br>
+        <label>Fecha de Orden: <input type="date" name="orden" value="${visita.orden || ""}" ></label><br>
+        <label>Fecha de Entrega: <input type="date" name="entrega" value="${visita.entrega || ""}" ></label><br>
+        <label>Material: <input type="text" name="material" value="${visita.material || ""}" ></label><br>
         <label>Graduación:</label><br>
-        <label>O.D: <input type="text" name="ojode" value="${visita.ojode || ""}" required></label><br>
-        <label>O.I: <input type="text" name="ojoiz" value="${visita.ojoiz || ""}" required></label><br>
-        <label>ADD.: <input type="text" name="add" value="${visita.add || ""}" required></label><br>
-        <label>Armazón: <input type="text" name="armazon" value="${visita.armazon || ""}" required></label><br>
+        <label>O.D: <input type="text" name="ojode" value="${visita.ojode || ""}" ></label><br>
+        <label>O.I: <input type="text" name="ojoiz" value="${visita.ojoiz || ""}" ></label><br>
+        <label>ADD.: <input type="text" name="add" value="${visita.add || ""}" ></label><br>
+        <label>Armazón: <input type="text" name="armazon" value="${visita.armazon || ""}" ></label><br>
         <label>Observaciones: <textarea name="obse">${visita.obse || ""}</textarea></label><br>
         <button type="submit">Guardar cambios</button>
         <button type="button" onclick="cancelarEdicionVisita(${index})">Cancelar</button>
