@@ -343,7 +343,7 @@ ${
           O.I: ${v.ojoiz || "-"}<br>
           ADD.: ${v.add || "-"}<br>
           Armazón: ${v.armazon || "-"}<br>
-          Sistema de apartado: ${v.sistemaApartado "-"}<br>
+          SistemaApartado: ${v.sistemaApartado "-"}<br>
           Observaciones: ${v.obse || "-"}<br>
           <button onclick="mostrarFormularioActualizarVisita('${id}', ${i})">Actualizar visita</button>
           <button onclick="eliminarVisita('${id}', ${i})">Eliminar visita</button>
@@ -435,7 +435,9 @@ function mostrarFormularioEdicionCompleta(id) {
     form.orden.value = cliente.orden || "";
     form.entrega.value = cliente.entrega || "";
     form.telefono.value = cliente.telefono || "";
+    
     form.fechaNacimiento.value = cliente.fechaNacimiento || "";
+    form.sistemaApartado.value = cliente.sistemaApartado || "";
     form.obse.value = cliente.obse || "";
 
     clienteSeleccionadoId = id;
