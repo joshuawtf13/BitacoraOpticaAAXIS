@@ -359,6 +359,7 @@ function actualizarCliente(id) {
   const clienteActualizado = {
   nombre: document.getElementById("nombre_" + id).value,
   telefono: document.getElementById("telefono_" + id).value,
+    fechaNcimiento: document.getElementById("fechaNacimiento_" + id).value,
   calle: document.getElementById("calle_" + id).value,
   colonia: document.getElementById("colonia_" + id).value,
   cp: document.getElementById("cp_" + id).value
@@ -515,7 +516,11 @@ function mostrarFormularioEdicion(id) {
       <label>Nombre:</label>
       <input type="text" id="nombre_${id}" value="${cliente.nombre || ""}">
       <label>Teléfono:</label>
+      
       <input type="text" id="telefono_${id}" value="${cliente.telefono || ""}">
+      <label>Fecha de Nacimiento:</label>
+      <input type="date" id="fechaNacimiento_${id}" value="${cliente.fechaNacimiento || ""}>
+      
       <label>Calle:</label>
 <input type="text" id="calle_${id}" value="${cliente.calle || ""}">
 <label>Colonia:</label>
